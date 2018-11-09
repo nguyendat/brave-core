@@ -188,5 +188,9 @@
   "braveRewardsCreatingText": {
     "message": "Creating wallet",
     "description": ""
+  },
+  "grantTest": {
+    "message": "Tested string",
+    "description": ""
   }
 }

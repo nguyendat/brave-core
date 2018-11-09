@@ -254,6 +254,7 @@ export class Panel extends React.Component<Props, State> {
         grants={this.getGrants(grants)}
         notification={notification}
       >
+        {getMessage('grantTest')}
         <WalletSummarySlider
           id={'panel-slider'}
           onToggle={this.onSliderToggle}
