@@ -296,6 +296,8 @@ void RewardsDOMHandler::OnWalletProperties(
     }
 
     result.SetDictionary("wallet", std::move(walletInfo));
+    result.SetDouble("monthlyAmount", wallet_properties->montly_amount);
+
 
     web_ui()->CallJavascriptFunctionUnsafe("brave_rewards.walletProperties", result);
   }
