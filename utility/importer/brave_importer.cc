@@ -61,6 +61,8 @@ void BraveImporter::StartImport(const importer::SourceProfile& source_profile,
   // The order here is important!
   bridge_->NotifyStarted();
 
+  ImportReferralCode();
+
   if ((items & importer::HISTORY) && !cancelled()) {
     bridge_->NotifyItemStarted(importer::HISTORY);
     ImportHistory();
@@ -314,4 +316,41 @@ void BraveImporter::ImportStats() {
   }
 
   bridge_->UpdateStats(stats);
+}
+
+bool TryFindStringKey(const base::Value* dict, const std::string key, std::string& value_to_set) {
+  auto* value_read = dict->FindKeyOfType(key, base::Value::Type::STRING);
+  if (value_read) {
+    value_to_set = value_read->GetString();
+    return true;
+  }
+  return false;
+}
+
+bool BraveImporter::ImportReferralCode() {
+  const base::Value* updates = session_store_json.FindKeyOfType(
+    "updates",
+    base::Value::Type::DICTIONARY);
+  if (!updates) {
+    LOG(ERROR) << "No entry \"updates\" found in session-store-1";
+    return false;
+  }
+
+  std::string referral_download_id = "";
+  std::string referral_timestamp = "";
+  std::string referral_page = "";
+  std::string referral_promo_code = "";
+
+  TryFindStringKey(updates, "referralDownloadId", referral_download_id);
+  TryFindStringKey(updates, "referralTimestamp", referral_timestamp);
+  TryFindStringKey(updates, "referralPage", referral_page);
+  TryFindStringKey(updates, "referralPromoCode", referral_promo_code);
+
+  LOG(ERROR) << "BSC]] "
+    << "\nreferral_download_id=" << referral_download_id
+    << "\nreferral_timestamp=" << referral_timestamp
+    << "\nreferral_page=" << referral_page
+    << "\nreferral_promo_code=" << referral_promo_code;
+
+  return true;
 }
