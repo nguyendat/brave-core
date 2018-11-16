@@ -15,6 +15,10 @@ int OnBeforeURLRequest_StaticRedirectWork(
   GURL::Replacements replacements;
   static URLPattern geo_pattern(URLPattern::SCHEME_HTTPS, kGeoLocationsPattern);
   static URLPattern safeBrowsing_pattern(URLPattern::SCHEME_HTTPS, kSafeBrowsingPrefix);
+  static URLPattern crlSet_pattern1(URLPattern::SCHEME_HTTP, kCRLSetPrefix1);
+  static URLPattern crlSet_pattern2(URLPattern::SCHEME_HTTP, kCRLSetPrefix2);
+  static URLPattern crlSet_pattern3(URLPattern::SCHEME_HTTP, kCRLSetPrefix3);
+  static URLPattern crlSet_pattern4(URLPattern::SCHEME_HTTP, kCRLSetPrefix4);
 
   if (geo_pattern.MatchesURL(ctx->request_url)) {
     ctx->new_url_spec = GURL(GOOGLEAPIS_ENDPOINT GOOGLEAPIS_API_KEY).spec();
@@ -26,6 +30,35 @@ int OnBeforeURLRequest_StaticRedirectWork(
     ctx->new_url_spec = ctx->request_url.ReplaceComponents(replacements).spec();
     return net::OK;
   }
+
+  if (crlSet_pattern1.MatchesHost(ctx->request_url)) {
+    replacements.SetSchemeStr("https");
+    replacements.SetHostStr("crlsets1.brave.com");
+    ctx->new_url_spec = ctx->request_url.ReplaceComponents(replacements).spec();
+    return net::OK;
+  }
+
+  if (crlSet_pattern2.MatchesHost(ctx->request_url)) {
+    replacements.SetSchemeStr("https");
+    replacements.SetHostStr("crlsets2.brave.com");
+    ctx->new_url_spec = ctx->request_url.ReplaceComponents(replacements).spec();
+    return net::OK;
+  }
+
+  if (crlSet_pattern3.MatchesHost(ctx->request_url)) {
+    replacements.SetSchemeStr("https");
+    replacements.SetHostStr("crlsets3.brave.com");
+    ctx->new_url_spec = ctx->request_url.ReplaceComponents(replacements).spec();
+    return net::OK;
+  }
+
+  if (crlSet_pattern4.MatchesHost(ctx->request_url)) {
+    replacements.SetSchemeStr("https");
+    replacements.SetHostStr("crlsets4.brave.com");
+    ctx->new_url_spec = ctx->request_url.ReplaceComponents(replacements).spec();
+    return net::OK;
+  }
+
 
 #if !defined(NDEBUG)
   GURL gurl = ctx->request_url;
