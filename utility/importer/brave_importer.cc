@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "brave/common/importer/brave_stats.h"
+#include "brave/common/importer/brave_referral.h"
 #include "chrome/common/importer/importer_bridge.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
@@ -61,7 +62,7 @@ void BraveImporter::StartImport(const importer::SourceProfile& source_profile,
   // The order here is important!
   bridge_->NotifyStarted();
 
-  ImportReferralCode();
+  ImportReferral();
 
   if ((items & importer::HISTORY) && !cancelled()) {
     bridge_->NotifyItemStarted(importer::HISTORY);
@@ -327,30 +328,43 @@ bool TryFindStringKey(const base::Value* dict, const std::string key, std::strin
   return false;
 }
 
-bool BraveImporter::ImportReferralCode() {
-  const base::Value* updates = session_store_json.FindKeyOfType(
+bool TryFindIntKey(const base::Value* dict, const std::string key, int& value_to_set) {
+  auto* value_read = dict->FindKeyOfType(key, base::Value::Type::INTEGER);
+  if (value_read) {
+    value_to_set = value_read->GetInt();
+    return true;
+  }
+  return false;
+}
+
+void BraveImporter::ImportReferral() {
+  LOG(ERROR) << "BSC]] ImportReferral";
+
+  std::unique_ptr<base::Value> session_store_json = ParseBraveSessionStore();
+  if (!session_store_json) {
+    return;
+  }
+
+  const base::Value* updates = session_store_json->FindKeyOfType(
     "updates",
     base::Value::Type::DICTIONARY);
   if (!updates) {
     LOG(ERROR) << "No entry \"updates\" found in session-store-1";
-    return false;
+    return;
   }
 
-  std::string referral_download_id = "";
-  std::string referral_timestamp = "";
-  std::string referral_page = "";
-  std::string referral_promo_code = "";
+  BraveReferral referral;
 
-  TryFindStringKey(updates, "referralDownloadId", referral_download_id);
-  TryFindStringKey(updates, "referralTimestamp", referral_timestamp);
-  TryFindStringKey(updates, "referralPage", referral_page);
-  TryFindStringKey(updates, "referralPromoCode", referral_promo_code);
+  TryFindStringKey(updates, "promoCode", referral.promo_code);
+  TryFindStringKey(updates, "referralDownloadId", referral.download_id);
+  TryFindIntKey(updates, "referralTimestamp", referral.finalize_timestamp);
+  TryFindStringKey(updates, "weekOfInstallation", referral.week_of_installation);
 
-  LOG(ERROR) << "BSC]] "
-    << "\nreferral_download_id=" << referral_download_id
-    << "\nreferral_timestamp=" << referral_timestamp
-    << "\nreferral_page=" << referral_page
-    << "\nreferral_promo_code=" << referral_promo_code;
+  LOG(ERROR) << "BSC]] 1"
+    << "\nreferral.promo_code=" << referral.promo_code
+    << "\nreferral.download_id=" << referral.download_id
+    << "\nreferral.finalize_timestamp=" << referral.finalize_timestamp
+    << "\nreferral.week_of_installation=" << referral.week_of_installation;
 
-  return true;
+  bridge_->UpdateReferral(referral);
 }

@@ -20,4 +20,9 @@ void BraveInProcessImporterBridge::UpdateStats(const BraveStats& stats) {
   writer_->UpdateStats(stats);
 }
 
+void BraveInProcessImporterBridge::UpdateReferral(const BraveReferral& referral) {
+  LOG(ERROR) << "BSC]] 2";
+  writer_->UpdateReferral(referral);
+}
+
 BraveInProcessImporterBridge::~BraveInProcessImporterBridge() {}
