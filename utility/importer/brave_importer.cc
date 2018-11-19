@@ -338,8 +338,6 @@ bool TryFindIntKey(const base::Value* dict, const std::string key, int& value_to
 }
 
 void BraveImporter::ImportReferral() {
-  LOG(ERROR) << "BSC]] ImportReferral";
-
   std::unique_ptr<base::Value> session_store_json = ParseBraveSessionStore();
   if (!session_store_json) {
     return;
@@ -359,12 +357,6 @@ void BraveImporter::ImportReferral() {
   TryFindStringKey(updates, "referralDownloadId", referral.download_id);
   TryFindIntKey(updates, "referralTimestamp", referral.finalize_timestamp);
   TryFindStringKey(updates, "weekOfInstallation", referral.week_of_installation);
-
-  LOG(ERROR) << "BSC]] 1"
-    << "\nreferral.promo_code=" << referral.promo_code
-    << "\nreferral.download_id=" << referral.download_id
-    << "\nreferral.finalize_timestamp=" << referral.finalize_timestamp
-    << "\nreferral.week_of_installation=" << referral.week_of_installation;
 
   bridge_->UpdateReferral(referral);
 }

@@ -74,32 +74,33 @@ void BraveProfileWriter::UpdateReferral(const BraveReferral& referral) {
 
   PrefService* prefs = profile_->GetOriginalProfile()->GetPrefs();
 
-  LOG(ERROR) << "BSC]] OK IN HERE";
+  if (!referral.week_of_installation.empty()) {
+    LOG(INFO) << "Setting kWeekOfInstallation to \"" << referral.week_of_installation << "\"";
+    prefs->SetString(kWeekOfInstallation, referral.week_of_installation);
+  }
 
-  // TODO: should this read "none"?
+  return;
+  //TODO: fixme
+  PrefService* local_state = NULL; //g_browser_process->local_state();
+
   if (!referral.promo_code.empty()) {
     LOG(INFO) << "Setting kReferralPromoCode to \"" << referral.promo_code << "\"";
-    prefs->SetString(kReferralPromoCode, referral.promo_code);
+    local_state->SetString(kReferralPromoCode, referral.promo_code);
   } else {
-    prefs->SetString(kReferralPromoCode, std::string());
+    local_state->ClearPref(kReferralPromoCode);
   }
 
   if (!referral.download_id.empty()) {
     LOG(INFO) << "Setting kReferralDownloadID to \"" << referral.download_id << "\"";
-    prefs->SetString(kReferralDownloadID, referral.download_id);
+    local_state->SetString(kReferralDownloadID, referral.download_id);
   } else {
-    prefs->SetString(kReferralDownloadID, std::string());
+    local_state->ClearPref(kReferralDownloadID);
   }
 
   if(referral.finalize_timestamp > 0) {
     LOG(INFO) << "Setting kReferralTimestamp to \"" << referral.finalize_timestamp << "\"";
-    prefs->SetTime(kReferralTimestamp, base::Time::FromJsTime(referral.finalize_timestamp));
+    local_state->SetTime(kReferralTimestamp, base::Time::FromJsTime(referral.finalize_timestamp));
   } else {
-    prefs->SetTime(kReferralTimestamp, base::Time());
-  }
-
-  if (!referral.week_of_installation.empty()) {
-    LOG(INFO) << "Setting kWeekOfInstallation to \"" << referral.week_of_installation << "\"";
-    prefs->SetString(kWeekOfInstallation, referral.week_of_installation);
+    local_state->ClearPref(kReferralTimestamp);
   }
 }
