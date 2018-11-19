@@ -9,6 +9,7 @@
 #include "brave/utility/importer/brave_importer.h"
 
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -66,40 +67,39 @@ void BraveProfileWriter::UpdateStats(const BraveStats& stats) {
 }
 
 void BraveProfileWriter::UpdateReferral(const BraveReferral& referral) {
-  LOG(ERROR) << "BSC]] 3"
-    << "\nreferral.promo_code=" << referral.promo_code
-    << "\nreferral.download_id=" << referral.download_id
-    << "\nreferral.finalize_timestamp=" << referral.finalize_timestamp
-    << "\nreferral.week_of_installation=" << referral.week_of_installation;
-
-  PrefService* prefs = profile_->GetOriginalProfile()->GetPrefs();
-
-  if (!referral.week_of_installation.empty()) {
-    LOG(INFO) << "Setting kWeekOfInstallation to \"" << referral.week_of_installation << "\"";
-    prefs->SetString(kWeekOfInstallation, referral.week_of_installation);
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state) {
+    LOG(ERROR) << "Unable to get local_state! (needed to set referral info)";
   }
 
-  return;
-  //TODO: fixme
-  PrefService* local_state = NULL; //g_browser_process->local_state();
+  if (!referral.week_of_installation.empty()) {
+    LOG(INFO) << "Setting kWeekOfInstallation to "
+      << "\"" << referral.week_of_installation << "\"";
+    local_state->SetString(kWeekOfInstallation, referral.week_of_installation);
+  }
 
-  if (!referral.promo_code.empty()) {
-    LOG(INFO) << "Setting kReferralPromoCode to \"" << referral.promo_code << "\"";
+  if (!referral.promo_code.empty() &&
+    referral.promo_code.compare("none") != 0) {
+    LOG(INFO) << "Setting kReferralPromoCode to "
+      << "\"" << referral.promo_code << "\"";
     local_state->SetString(kReferralPromoCode, referral.promo_code);
   } else {
     local_state->ClearPref(kReferralPromoCode);
   }
 
   if (!referral.download_id.empty()) {
-    LOG(INFO) << "Setting kReferralDownloadID to \"" << referral.download_id << "\"";
+    LOG(INFO) << "Setting kReferralDownloadID to "
+      << "\"" << referral.download_id << "\"";
     local_state->SetString(kReferralDownloadID, referral.download_id);
   } else {
     local_state->ClearPref(kReferralDownloadID);
   }
 
   if(referral.finalize_timestamp > 0) {
-    LOG(INFO) << "Setting kReferralTimestamp to \"" << referral.finalize_timestamp << "\"";
-    local_state->SetTime(kReferralTimestamp, base::Time::FromJsTime(referral.finalize_timestamp));
+    LOG(INFO) << "Setting kReferralTimestamp to "
+      << "\"" << referral.finalize_timestamp << "\"";
+    local_state->SetTime(kReferralTimestamp,
+      base::Time::FromJsTime(referral.finalize_timestamp));
   } else {
     local_state->ClearPref(kReferralTimestamp);
   }

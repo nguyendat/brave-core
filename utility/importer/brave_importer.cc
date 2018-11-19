@@ -355,7 +355,14 @@ void BraveImporter::ImportReferral() {
 
   TryFindStringKey(updates, "promoCode", referral.promo_code);
   TryFindStringKey(updates, "referralDownloadId", referral.download_id);
-  TryFindIntKey(updates, "referralTimestamp", referral.finalize_timestamp);
+
+  // TODO: properly read this value.
+  // It's 64 bit, but trying to find it via FindKeyOfType
+  // using int or string both return empty. Need to find a way to read it.
+  std::string finalize_timestamp;
+  TryFindStringKey(updates, "referralTimestamp", finalize_timestamp);
+  LOG(ERROR) << "BSC]] finalize_timestamp=" << finalize_timestamp;
+
   TryFindStringKey(updates, "weekOfInstallation", referral.week_of_installation);
 
   bridge_->UpdateReferral(referral);
